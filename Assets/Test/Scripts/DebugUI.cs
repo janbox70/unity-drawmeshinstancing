@@ -33,9 +33,22 @@ public class DebugUI : MonoBehaviour
     private float _fps = 1f;
     private float _lastUpdateTime = 0f;
     private int _framesSinceLastUpdate = 0;
+    GUIStyle _style = null;
 
     private void Start()
     {
+        _style = new GUIStyle();
+        _style.fontSize = 32;
+        _style.alignment = TextAnchor.MiddleCenter;
+        _style.fixedWidth = Screen.width;
+        _style.normal.textColor = Color.white;
+
+        processorCount = SystemInfo.processorCount;
+        if (processorCount == 0)
+        {
+            processorCount = 1;
+        }
+
         Application.runInBackground = true;
 
         _lastUpdateTime = Time.realtimeSinceStartup;
@@ -60,7 +73,11 @@ public class DebugUI : MonoBehaviour
         //
         // if this returns a wrong value for you comment this method out
         // and set the value manually
-        processorCount = SystemInfo.processorCount / 2;
+        //processorCount = SystemInfo.processorCount;
+        //if (processorCount == 0)
+        //{
+        //    processorCount = 1;
+        //}
     }
 
     private void OnDestroy()
@@ -128,6 +145,6 @@ public class DebugUI : MonoBehaviour
     }
     private void OnGUI()
     {
-        GUILayout.Label($"FPS: {_fps:F2}\nCPU: {CpuUsage:F1}%");
+        GUILayout.Label($"FPS: {_fps:F2}\nCPU: {CpuUsage:F1}%  (Core: {processorCount})", _style);
     }
 }
