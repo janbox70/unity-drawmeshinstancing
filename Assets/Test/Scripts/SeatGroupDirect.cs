@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 public class SeatGroupDirect : MonoBehaviour
 {
@@ -14,9 +15,6 @@ public class SeatGroupDirect : MonoBehaviour
     {
         public MaterialPropertyBlock mpb;
         public Matrix4x4[] matrix;
-        public Vector4[] colorArray;
-        public float[] colArray;
-        public float[] rowArray;
         public int batchSize;
     };
 
@@ -41,6 +39,7 @@ public class SeatGroupDirect : MonoBehaviour
     {
         // 装入 mesh
         _meshes = new List<Mesh>(objTypes.Length);
+
         foreach (string objType in objTypes)
         {
             string fullname = "Prefabs/Seat" + objType;
@@ -51,7 +50,7 @@ public class SeatGroupDirect : MonoBehaviour
             } 
             else
             {
-                GameObject obj = Instantiate(prefab);
+                GameObject obj = Instantiate(prefab, this.transform);
                 obj.SetActive(false);
                 _meshes.Add(obj.GetComponent<MeshFilter>().mesh);
                 if (_material == null)
@@ -67,40 +66,41 @@ public class SeatGroupDirect : MonoBehaviour
     {
         int number = seatData.numberPerRow * seatData.numberPerCol;
 
-        seatsBatch = new SeatsBatch[(number + 999) / 1000];
+        int batchNumber = (number + 999) / 1000;
 
-        int curBatch = 0;
-        for (int i = 0; i < number; i++)
+        seatsBatch = new SeatsBatch[batchNumber];
+
+        int index = 0;
+        int batchSize = 1000;
+        for (int curBatch = 0; curBatch < batchNumber; curBatch++)
         {
-            curBatch = i / 1000;
-            if (i % 1000 == 0)
+            if (curBatch == batchNumber - 1)
             {
-                seatsBatch[curBatch].matrix = new Matrix4x4[number];
-                seatsBatch[curBatch].colorArray = new Vector4[number];
-                seatsBatch[curBatch].colArray = new float[number];
-                seatsBatch[curBatch].rowArray = new float[number];
-                seatsBatch[curBatch].batchSize = number - i > 1000 ? 1000 : number - i;
+                batchSize = number - curBatch * batchSize;
             }
 
-            float col = (i / seatData.numberPerRow) / (float)seatData.numberPerCol;
-            float row = (i % seatData.numberPerRow) / (float)seatData.numberPerRow;
-            seatsBatch[curBatch].colArray[i%1000] = col;
-            seatsBatch[curBatch].rowArray[i%1000] = row;
+            seatsBatch[curBatch].batchSize = batchSize;
+            seatsBatch[curBatch].matrix = new Matrix4x4[batchSize];
 
-            seatsBatch[curBatch].colorArray[i % 1000].Set(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
+            Vector4[]colorArray = new Vector4[batchSize];
+            Vector4[]posArray  = new Vector4[batchSize];
 
+            
+            for(int i = 0; i < batchSize; i++, index ++)
+            {
+                // x: is col, y is row,  z 半径， w: 方向角 
+                posArray[i].x = (index / seatData.numberPerRow) / (float)seatData.numberPerCol;
+                posArray[i].y = (index % seatData.numberPerRow) / (float)seatData.numberPerRow;
+                posArray[i].z = Mathf.Sqrt((posArray[i].x - 0.5f) * (posArray[i].x - 0.5f) + (posArray[i].y - 0.5f) * (posArray[i].y - 0.5f));
+                colorArray[i].Set(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
 
-            Vector3 pos = new Vector3(col * (seatData.EndX - seatData.StartX) + seatData.StartX, 0, row * (seatData.EndZ - seatData.StartZ) + seatData.StartZ);
-            seatsBatch[curBatch].matrix[i%1000] = Matrix4x4.TRS(pos, Quaternion.identity, Vector3.one);
-        }
+                Vector3 pos = new Vector3(posArray[i].x * (seatData.EndX - seatData.StartX) + seatData.StartX, 0, posArray[i].y * (seatData.EndZ - seatData.StartZ) + seatData.StartZ);
+                seatsBatch[curBatch].matrix[i] = Matrix4x4.TRS(pos, Quaternion.identity, Vector3.one);
+            }
 
-        for (int i = 0; i < seatsBatch.Length; i++) 
-        {
-            seatsBatch[i].mpb = new MaterialPropertyBlock();
-            seatsBatch[i].mpb.SetFloatArray("_Col", seatsBatch[i].colArray);
-            seatsBatch[i].mpb.SetFloatArray("_Row", seatsBatch[i].rowArray);
-            seatsBatch[i].mpb.SetVectorArray("_Color", seatsBatch[i].colorArray);
-
+            seatsBatch[curBatch].mpb = new MaterialPropertyBlock();
+            seatsBatch[curBatch].mpb.SetVectorArray("_Pos", posArray);
+            seatsBatch[curBatch].mpb.SetVectorArray("_Color", colorArray);
         }
     }
 
@@ -109,7 +109,7 @@ public class SeatGroupDirect : MonoBehaviour
         // 分批次执行
         for (int batch = 0; batch < seatsBatch.Length; batch++)
         {
-            Graphics.DrawMeshInstanced(_meshes[_curMeshIndex], 0, _material, seatsBatch[batch].matrix, seatsBatch[batch].batchSize, seatsBatch[batch].mpb);
+            Graphics.DrawMeshInstanced(_meshes[_curMeshIndex], 0, _material, seatsBatch[batch].matrix, seatsBatch[batch].matrix.Length, seatsBatch[batch].mpb);
         }
     }
 

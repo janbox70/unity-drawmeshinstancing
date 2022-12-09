@@ -49,9 +49,9 @@ public class DebugUI : MonoBehaviour
             processorCount = 1;
         }
 
-        Application.runInBackground = true;
-
         _lastUpdateTime = Time.realtimeSinceStartup;
+
+        Application.runInBackground = true;
 
         // setup the thread
         _cpuThread = new Thread(UpdateCPUUsage)
@@ -89,11 +89,13 @@ public class DebugUI : MonoBehaviour
     private void Update()
     {
         _framesSinceLastUpdate++;
-        if (Time.realtimeSinceStartup - _lastUpdateTime > 0.5)
+
+        float curTime  = Time.realtimeSinceStartup;
+        if (curTime - _lastUpdateTime > updateInterval)
         {
-            _fps = _framesSinceLastUpdate / (Time.realtimeSinceStartup - _lastUpdateTime);
+            _fps = _framesSinceLastUpdate / (curTime - _lastUpdateTime);
             _framesSinceLastUpdate = 0;
-            _lastUpdateTime = Time.realtimeSinceStartup;
+            _lastUpdateTime = curTime;
         }
 
         // for more efficiency skip if nothing has changed

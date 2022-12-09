@@ -113,10 +113,8 @@ Pass
 	#include "UnityCG.cginc"
 
 	UNITY_INSTANCING_BUFFER_START(Props)
-		UNITY_DEFINE_INSTANCED_PROP(float, _Col)
-		#define propsCol Props
-		UNITY_DEFINE_INSTANCED_PROP(float, _Row)
-		#define propsRow Props
+		UNITY_DEFINE_INSTANCED_PROP(float4, _Pos)
+		#define propsPos Props
 		UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 		#define propsColor Props
 			UNITY_INSTANCING_BUFFER_END(Props)
@@ -150,14 +148,9 @@ Pass
 				//第五步：传递 instanceid 顶点到片元
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 
-				float row = UNITY_ACCESS_INSTANCED_PROP(propsRow, _Row);
-				float col = UNITY_ACCESS_INSTANCED_PROP(propsCol, _Col);
-
-				//v.vertex.x = 100 * (row - 0.5);
-				//v.vertex.z = 100 * col;
-				float t = 12.0;
-				float r = sqrt((row - 0.5) * (row - 0.5) + (col - 0.5) * (col - 0.5));
-				v.vertex.y = v.vertex.y + 5 * sin(_Time.y - t * r);
+				// Pos: x, y 为 行/列， z 为半径， w为方向角
+				float4 pos = UNITY_ACCESS_INSTANCED_PROP(propsPos, _Pos);
+				v.vertex.y = v.vertex.y + 5 * sin(_Time.y * 2 - pos.z * 20);
 
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
@@ -178,11 +171,10 @@ Pass
 
 			float4 color = UNITY_ACCESS_INSTANCED_PROP(propsColor, _Color);
 
-			float row = UNITY_ACCESS_INSTANCED_PROP(propsRow, _Row);
-			float col = UNITY_ACCESS_INSTANCED_PROP(propsCol, _Col);
-			float r = sqrt((row - 0.5) * (row - 0.5) + (col - 0.5) * (col - 0.5));
+			// Pos: x, y 为 行/列， z 为半径， w为方向角
+			float4 pos = UNITY_ACCESS_INSTANCED_PROP(propsPos, _Pos);
 
-			color = color + (sin(_Time.y - r * 12)) / 4;
+			color = color + (sin(_Time.y * 2 - pos.z * 30)) / 4;
 
 			return color;
 		}

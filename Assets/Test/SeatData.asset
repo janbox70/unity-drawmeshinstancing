@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152f080c2b90f61489508a2a0a7ed871, type: 3}
   m_Name: SeatData
   m_EditorClassIdentifier: 
-  prefabName: seatCube
-  numberPerRow: 300
-  numberPerCol: 350
-  StartX: -200
+  numberPerRow: 320
+  numberPerCol: 320
+  StartX: -250
   StartZ: 0
-  EndX: 200
+  EndX: 250
   EndZ: 400
