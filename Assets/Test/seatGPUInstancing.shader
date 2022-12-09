@@ -178,11 +178,11 @@ Pass
 
 			float4 color = UNITY_ACCESS_INSTANCED_PROP(propsColor, _Color);
 
-			//float row = UNITY_ACCESS_INSTANCED_PROP(propsRow, _Row);
-			//float col = UNITY_ACCESS_INSTANCED_PROP(propsCol, _Col);
-			//float r = sqrt((row - 0.5) * (row - 0.5) + (col - 0.5) * (col - 0.5));
+			float row = UNITY_ACCESS_INSTANCED_PROP(propsRow, _Row);
+			float col = UNITY_ACCESS_INSTANCED_PROP(propsCol, _Col);
+			float r = sqrt((row - 0.5) * (row - 0.5) + (col - 0.5) * (col - 0.5));
 
-			//color = color + (sin(_Time.y - r * 12)) / 4;
+			color = color + (sin(_Time.y - r * 12)) / 4;
 
 			return color;
 		}

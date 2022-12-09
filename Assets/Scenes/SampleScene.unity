@@ -152,8 +152,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a83bff98a2527204380f3f03d66ad07b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seatPrefab: {fileID: 720989356895256195, guid: d4453484f6ce65b4885fd611d47b3aa4,
-    type: 3}
+  objTypes:
+  - Quad
+  - Cube
+  - Cylinder
+  - Sphere
+  - Capsule
   seatData: {fileID: 11400000, guid: 5e338b8e2dd029b489731658e11ead58, type: 2}
 --- !u!4 &221765974
 Transform:

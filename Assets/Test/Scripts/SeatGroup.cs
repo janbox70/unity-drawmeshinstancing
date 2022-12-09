@@ -36,7 +36,7 @@ public class SeatGroup : MonoBehaviour
             GameObject currentEntity = Instantiate(seatPrefab, pos, Quaternion.identity, parent.transform);
 
             //将实例化实体的名称设置为 ScriptableObject 中定义的字符串，然后为其附加一个唯一编号。
-            currentEntity.name = seatData.prefabName + instanceNumber;
+            currentEntity.name = seatPrefab.name + instanceNumber;
 
             SetPropertyBlockByGameObject(currentEntity, 0, row, col);
 

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2300675711219498677}
   - component: {fileID: 3478852855352678037}
   m_Layer: 0
-  m_Name: Seat
+  m_Name: SeatSphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

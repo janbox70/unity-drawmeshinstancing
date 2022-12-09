@@ -5,8 +5,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "SeatData", menuName = "ScriptableObjects/SeatData", order = 1)]
 public class SeatData : ScriptableObject
 {
-    public string prefabName;
-
     public int numberPerRow;
     public int numberPerCol;
     public float StartX;
