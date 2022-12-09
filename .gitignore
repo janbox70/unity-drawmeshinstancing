@@ -1,0 +1,13 @@
+.vs/
+.plastic/
+obj/
+Library/
+Logs/
+Temp/
+Packages/
+.vsconfig
+*.apk
+*.pdb
+/*.csproj
+/*.sln
+*Debug*/

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 152f080c2b90f61489508a2a0a7ed871, type: 3}
+  m_Name: SeatData
+  m_EditorClassIdentifier: 
+  prefabName: seatCube
+  numberPerRow: 300
+  numberPerCol: 350
+  StartX: -200
+  StartZ: 0
+  EndX: 200
+  EndZ: 400
