@@ -1,17 +1,15 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 
 public class DirectInstancing : MonoBehaviour
 {
-    // 要实例化的游戏对象。
-
     public string[] objTypes = { "Quad", "Cube", "Cylinder", "Sphere", "Capsule" };
 
     public InstancingParam instancingParam;
+    // commandBuffer，貌似不能正常工作
+    public bool byCommandBuffer = false;
 
     struct InstancingBatch
     {
@@ -38,9 +36,12 @@ public class DirectInstancing : MonoBehaviour
         Debug.Log("Start");
 
         initMesh();
-        CreateSeats();
+        createObjects();
 
-        //prepareCommandBuffer();
+        if(byCommandBuffer)
+        {
+            prepareCommandBuffer();
+        }
     }
 
     void initMesh()
@@ -58,7 +59,7 @@ public class DirectInstancing : MonoBehaviour
 
         foreach (string objType in objTypes)
         {
-            fullname = "Prefabs/Seat" + objType;
+            fullname = "Prefabs/" + objType;
             GameObject prefab = Resources.Load<GameObject>(fullname);
             if (prefab == null)
             {
@@ -73,7 +74,7 @@ public class DirectInstancing : MonoBehaviour
         }
     }
 
-    void CreateSeats()
+    void createObjects()
     {
         int number = instancingParam.numberPerRow * instancingParam.numberPerCol;
 
@@ -120,17 +121,21 @@ public class DirectInstancing : MonoBehaviour
     void Update()
     {
         // 分批次执行
-        for (int batch = 0; batch < batchData.Length; batch++)
+        if(!byCommandBuffer)
         {
-            Graphics.DrawMeshInstanced(_meshes[_curMeshIndex], 0, _material, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
+            for (int batch = 0; batch < batchData.Length; batch++)
+            {
+                Graphics.DrawMeshInstanced(_meshes[_curMeshIndex], 0, _material, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
+            }
         }
     }
 
     void prepareCommandBuffer()
     {
+        // 这种方式不能工作？  // todo
         if (_cmdBuff != null)
         {
-            Camera.main.RemoveCommandBuffer(CameraEvent.BeforeForwardOpaque, _cmdBuff);
+            Camera.main.RemoveCommandBuffer(CameraEvent.AfterForwardOpaque, _cmdBuff);
             CommandBufferPool.Release(_cmdBuff);
         }
         _cmdBuff = CommandBufferPool.Get("DrawMeshInstanced");
@@ -139,7 +144,7 @@ public class DirectInstancing : MonoBehaviour
             _cmdBuff.DrawMeshInstanced(_meshes[_curMeshIndex], 0, _material, -1, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
         }
 
-        Camera.main.AddCommandBuffer(CameraEvent.BeforeForwardOpaque, _cmdBuff);
+        Camera.main.AddCommandBuffer(CameraEvent.AfterForwardOpaque, _cmdBuff);
     }
 
     private void OnGUI()
@@ -161,8 +166,11 @@ public class DirectInstancing : MonoBehaviour
                 // 点击 Button 时执行此代码
                 _curMeshIndex = i;
 
-                // mesh修改了，需要更新 commandBuffer
-                prepareCommandBuffer();
+                if(byCommandBuffer)
+                {
+                    // mesh修改了，需要更新 commandBuffer
+                    prepareCommandBuffer();
+                }
             }
 
             rc.xMin += space + 200;

@@ -2,40 +2,27 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class DebugUI : MonoBehaviour
 {
-    //[Header("Components")]
-
-    //[SerializeField] private TMP_Text perfText;
-
-    //[Header("Settings")]
-
-    //[Tooltip("In which interval should the CPU usage be updated?")]
-    //[SerializeField] private float updateInterval = 1;
-
-    //[Tooltip("The amount of physical CPU cores")]
-    //[SerializeField] private int processorCount;
-
-
-    //[Header("Output")]
-    //public float CpuUsage;
-
     static public string DisplayMessage = "";
+    GUIStyle _style = null;
 
+    // cpu
+    public bool EnableCPUUsage = false;
     private int processorCount;
     private float updateInterval = 1f;
-    public float CpuUsage = 0f;
+
+    private float CpuUsage = 0f;
 
     private Thread _cpuThread;
     private float _lasCpuUsage;
 
+    // fps 
     private float _fps = 1f;
     private float _lastUpdateTime = 0f;
     private int _framesSinceLastUpdate = 0;
-    GUIStyle _style = null;
 
     private void Start()
     {
@@ -46,40 +33,24 @@ public class DebugUI : MonoBehaviour
         _style.normal.textColor = Color.white;
 
         processorCount = SystemInfo.processorCount;
-        if (processorCount == 0)
-        {
-            processorCount = 1;
-        }
-
         _lastUpdateTime = Time.realtimeSinceStartup;
 
-        Application.runInBackground = true;
+        //Application.runInBackground = true;
 
         // setup the thread
-        _cpuThread = new Thread(UpdateCPUUsage)
+        if (EnableCPUUsage)
         {
-            IsBackground = true,
-            // we don't want that our measurement thread
-            // steals performance
-            Priority = System.Threading.ThreadPriority.BelowNormal
-        };
+            _cpuThread = new Thread(UpdateCPUUsage)
+            {
+                IsBackground = true,
+                // we don't want that our measurement thread
+                // steals performance
+                Priority = System.Threading.ThreadPriority.BelowNormal
+            };
 
-        // start the cpu usage thread
-        _cpuThread.Start();
-    }
-
-    private void OnValidate()
-    {
-        // We want only the physical cores but usually
-        // this returns the twice as many virtual core count
-        //
-        // if this returns a wrong value for you comment this method out
-        // and set the value manually
-        //processorCount = SystemInfo.processorCount;
-        //if (processorCount == 0)
-        //{
-        //    processorCount = 1;
-        //}
+            // start the cpu usage thread
+            _cpuThread.Start();
+        }
     }
 
     private void OnDestroy()
@@ -100,16 +71,19 @@ public class DebugUI : MonoBehaviour
             _lastUpdateTime = curTime;
         }
 
-        // for more efficiency skip if nothing has changed
-        if (Mathf.Approximately(_lasCpuUsage, CpuUsage)) return;
+        if (EnableCPUUsage)
+        {
+            // for more efficiency skip if nothing has changed
+            if (Mathf.Approximately(_lasCpuUsage, CpuUsage)) return;
 
-        // the first two values will always be "wrong"
-        // until _lastCpuTime is initialized correctly
-        // so simply ignore values that are out of the possible range
-        if (CpuUsage < 0 || CpuUsage > 100) return;
+            // the first two values will always be "wrong"
+            // until _lastCpuTime is initialized correctly
+            // so simply ignore values that are out of the possible range
+            if (CpuUsage < 0 || CpuUsage > 100) return;
 
-        // Update the value of _lasCpuUsage
-        _lasCpuUsage = CpuUsage;
+            // Update the value of _lasCpuUsage
+            _lasCpuUsage = CpuUsage;
+        }
     }
 
     /// <summary>
@@ -149,6 +123,13 @@ public class DebugUI : MonoBehaviour
     }
     private void OnGUI()
     {
-        GUILayout.Label($"FPS: {_fps:F2} CPU: {CpuUsage:F1}%  (Core: {processorCount})\n{DisplayMessage}", _style);
+        if (EnableCPUUsage)
+        {
+            GUILayout.Label($"FPS: {_fps:F2} CPU: {CpuUsage:F1}%  (Core: {processorCount})\n{DisplayMessage}", _style);
+        } 
+        else
+        {
+            GUILayout.Label($"FPS: {_fps:F2}\n{DisplayMessage}", _style);
+        }
     }
 }
