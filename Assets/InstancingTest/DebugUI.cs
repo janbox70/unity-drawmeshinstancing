@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class DebugUI : MonoBehaviour
@@ -22,6 +23,7 @@ public class DebugUI : MonoBehaviour
     //[Header("Output")]
     //public float CpuUsage;
 
+    static public string DisplayMessage = "";
 
     private int processorCount;
     private float updateInterval = 1f;
@@ -147,6 +149,6 @@ public class DebugUI : MonoBehaviour
     }
     private void OnGUI()
     {
-        GUILayout.Label($"FPS: {_fps:F2}\nCPU: {CpuUsage:F1}%  (Core: {processorCount})", _style);
+        GUILayout.Label($"FPS: {_fps:F2} CPU: {CpuUsage:F1}%  (Core: {processorCount})\n{DisplayMessage}", _style);
     }
 }

@@ -132,33 +132,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 221765974}
-  - component: {fileID: 221765973}
+  - component: {fileID: 221765975}
   m_Layer: 0
-  m_Name: SeatGroupDirect
+  m_Name: DirectInstancing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &221765973
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 221765972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a83bff98a2527204380f3f03d66ad07b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  objTypes:
-  - Quad
-  - Cube
-  - Cylinder
-  - Sphere
-  - Capsule
-  seatData: {fileID: 11400000, guid: 5e338b8e2dd029b489731658e11ead58, type: 2}
 --- !u!4 &221765974
 Transform:
   m_ObjectHideFlags: 0
@@ -174,6 +155,25 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &221765975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 221765972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9286b8f473af894e931ee3137d0ed7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objTypes:
+  - Quad
+  - Cube
+  - Cylinder
+  - Sphere
+  - Capsule
+  instancingParam: {fileID: 11400000, guid: d06c4fc16d06ebe439945b87e02d539a, type: 2}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0

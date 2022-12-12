@@ -9,12 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 152f080c2b90f61489508a2a0a7ed871, type: 3}
-  m_Name: SeatData
+  m_Script: {fileID: 11500000, guid: eeaab6856ec652b44aa636c3051dc404, type: 3}
+  m_Name: InstancingParam
   m_EditorClassIdentifier: 
   numberPerRow: 320
   numberPerCol: 320
   StartX: -250
-  StartZ: 0
   EndX: 250
+  StartZ: 0
   EndZ: 400
