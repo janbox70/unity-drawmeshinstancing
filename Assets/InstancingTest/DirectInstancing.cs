@@ -5,8 +5,6 @@ using UnityEngine.Rendering;
 
 public class DirectInstancing : MonoBehaviour
 {
-    public string[] objTypes = { "Quad", "Cube", "Cylinder", "Sphere", "Capsule" };
-
     public InstancingParam instancingParam;
     // commandBuffer，貌似不能正常工作
     public bool byCommandBuffer = false;
@@ -55,23 +53,7 @@ public class DirectInstancing : MonoBehaviour
         }
 
         // 装入 mesh
-        _meshes = new List<Mesh>(objTypes.Length);
-
-        foreach (string objType in objTypes)
-        {
-            fullname = "Prefabs/" + objType;
-            GameObject prefab = Resources.Load<GameObject>(fullname);
-            if (prefab == null)
-            {
-                Debug.LogError($"failed load prefabs: {fullname}");
-            } 
-            else
-            {
-                GameObject obj = Instantiate(prefab, this.transform);
-                obj.SetActive(false);
-                _meshes.Add(obj.GetComponent<MeshFilter>().mesh);
-            }
-        }
+        _meshes = instancingParam.loadMeshes(this.transform);
     }
 
     void createObjects()
@@ -113,7 +95,7 @@ public class DirectInstancing : MonoBehaviour
             }
 
             batchData[curBatch].mpb = new MaterialPropertyBlock();
-            batchData[curBatch].mpb.SetVectorArray("_Pos", posArray);
+            batchData[curBatch].mpb.SetVectorArray("_CRRS", posArray);
             batchData[curBatch].mpb.SetVectorArray("_Color", colorArray);
         }
     }
@@ -155,13 +137,13 @@ public class DirectInstancing : MonoBehaviour
             _btnStyle.fontSize = 40;
             _btnStyle.alignment= TextAnchor.MiddleCenter;
         }
-        int space = (Screen.width - 200 * objTypes.Length )/(objTypes.Length+1);
+        int space = (Screen.width - 200 * instancingParam.objTypes.Length )/(instancingParam.objTypes.Length+1);
         Rect rc = new Rect(space, Screen.height - 120, 200, 80);
-        for( int i = 0; i < objTypes.Length; i++)
+        for( int i = 0; i < instancingParam.objTypes.Length; i++)
         {
             _btnStyle.normal.textColor = i == _curMeshIndex? Color.green : Color.gray;
 
-            if (GUI.Button(rc, objTypes[i], _btnStyle))
+            if (GUI.Button(rc, instancingParam.objTypes[i], _btnStyle))
             {
                 // 点击 Button 时执行此代码
                 _curMeshIndex = i;

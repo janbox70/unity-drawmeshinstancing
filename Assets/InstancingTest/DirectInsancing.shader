@@ -1,4 +1,4 @@
-Shader "Unlit/DirectInstancing"
+Shader "Instanced/DirectInstancing"
 {
 	Properties
 	{
@@ -22,7 +22,7 @@ Shader "Unlit/DirectInstancing"
 			#include "UnityCG.cginc"
 
 			UNITY_INSTANCING_BUFFER_START(Props)
-				UNITY_DEFINE_INSTANCED_PROP(float4, _Pos)
+				UNITY_DEFINE_INSTANCED_PROP(float4, _CRRS)
 				#define propsPos Props
 				UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
 				#define propsColor Props
@@ -58,8 +58,8 @@ Shader "Unlit/DirectInstancing"
 					UNITY_TRANSFER_INSTANCE_ID(v, o);
 
 					// Pos: x, y 为 行/列， z 为半径， w为方向角
-					float4 pos = UNITY_ACCESS_INSTANCED_PROP(propsPos, _Pos);
-					v.vertex.y = v.vertex.y + 5 * sin(_Time.y * 2 - pos.z * 20);
+					float4 crrs = UNITY_ACCESS_INSTANCED_PROP(propsPos, _CRRS);
+					v.vertex.y = v.vertex.y + 5 * sin(_Time.y * 2 - crrs.z * 20);
 
 					o.vertex = UnityObjectToClipPos(v.vertex);
 					o.uv = TRANSFORM_TEX(v.uv, _MainTex);
@@ -81,9 +81,9 @@ Shader "Unlit/DirectInstancing"
 				float4 color = UNITY_ACCESS_INSTANCED_PROP(propsColor, _Color);
 
 				// Pos: x, y 为 行/列， z 为半径， w为方向角
-				float4 pos = UNITY_ACCESS_INSTANCED_PROP(propsPos, _Pos);
+				float4 crrs = UNITY_ACCESS_INSTANCED_PROP(propsPos, _CRRS);
 
-				color = color + (sin(_Time.y * 2 - pos.z * 30)) / 4;
+				color = color + (sin(_Time.y * 2 - crrs.z * 30)) / 4;
 
 				return color;
 			}

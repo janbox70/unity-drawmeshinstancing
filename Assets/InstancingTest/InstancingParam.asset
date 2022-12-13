@@ -12,9 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeaab6856ec652b44aa636c3051dc404, type: 3}
   m_Name: InstancingParam
   m_EditorClassIdentifier: 
+  objTypes:
+  - Quad
+  - Cube
+  - Cylinder
+  - Sphere
+  - Capsule
   numberPerRow: 320
   numberPerCol: 320
-  StartX: -250
-  EndX: 250
+  StartX: -300
+  EndX: 300
   StartZ: 0
   EndZ: 400

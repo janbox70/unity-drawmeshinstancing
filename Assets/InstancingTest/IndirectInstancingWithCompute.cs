@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 
-public class IndirectInstancing : MonoBehaviour
+public class IndirectInstancingWithCompute : MonoBehaviour
 {
-    // 使用GPU初始化参数，并控制动画
     public InstancingParam instancingParam;
+    public ComputeShader compute;
     private Vector4 _region;
 
     private List<Mesh> _meshes = null;
@@ -24,13 +23,15 @@ public class IndirectInstancing : MonoBehaviour
 
     private struct MeshProperties
     {
-        public Vector4 crrs;            // col/row/r/scale
+        public Matrix4x4 mat;
+        public Vector4 crrs;        // col/row/r/scale
         public Vector4 color;
 
         public static int Size()
         {
             return
-                sizeof(float) * 4 +      // crrs; 
+                sizeof(float) * 4 * 4 + // matrix;
+                sizeof(float) * 4 +      // crrs (uv, r, scale)
                 sizeof(float) * 4;      // color;
         }
     }
@@ -48,7 +49,7 @@ public class IndirectInstancing : MonoBehaviour
     void initMesh()
     {
         // 装入材质
-        string fullname = "Material/IndirectInstancing";
+        string fullname = "Material/IndirectInstancingWithCompute";
         _material = Resources.Load(fullname, typeof(Material)) as Material;
         if (_material == null)
         {
@@ -65,16 +66,20 @@ public class IndirectInstancing : MonoBehaviour
 
         DebugUI.DisplayMessage = $"InstanceCount: {instanceCount}";
 
+        Shader.SetGlobalFloat("_Col", instancingParam.numberPerCol);
+        Shader.SetGlobalFloat("_Row", instancingParam.numberPerRow);
+        Shader.SetGlobalVector("_Region", new Vector4(instancingParam.StartX, instancingParam.EndX, instancingParam.StartZ, instancingParam.EndZ));
+
         MeshProperties[] properties = new MeshProperties[instanceCount];
-        float scale = 1.0f;
         for (int i = 0; i < instanceCount; i++)
         {
-            // 初始化位置及颜色
+            // 除颜色外，其余的均在computeshader CSInit中初始化
+            //float x = (i / instancingParam.numberPerRow) / (float)instancingParam.numberPerCol;
+            //float z = (i % instancingParam.numberPerRow) / (float)instancingParam.numberPerRow;
+            //Vector3 pos = new Vector3(x * (instancingParam.EndX - instancingParam.StartX) + instancingParam.StartX, 0, z * (instancingParam.EndZ - instancingParam.StartZ) + instancingParam.StartZ);
+            //Vector3 pos = Vector3.zero;
+            //properties[i].mat = Matrix4x4.TRS(pos, Quaternion.identity, Vector3.one);
             properties[i].color = UnityEngine.Random.ColorHSV();
-
-            float x = (i / instancingParam.numberPerRow) / (float)instancingParam.numberPerCol;
-            float y = (i % instancingParam.numberPerRow) / (float)instancingParam.numberPerRow;
-            properties[i].crrs = new Vector4(x, y, Mathf.Sqrt((x - 0.5f) * (x - 0.5f) + (y - 0.5f) * (y - 0.5f)), scale);
         }
 
         meshPropertiesBuffer = new ComputeBuffer(instanceCount, MeshProperties.Size());
@@ -82,9 +87,13 @@ public class IndirectInstancing : MonoBehaviour
 
         _material.SetBuffer("_Properties", meshPropertiesBuffer);
 
-        Shader.SetGlobalFloat("_Col", instancingParam.numberPerCol);
-        Shader.SetGlobalFloat("_Row", instancingParam.numberPerRow);
-        Shader.SetGlobalVector("_Region", new Vector4(instancingParam.StartX, instancingParam.EndX, instancingParam.StartZ, instancingParam.EndZ));
+        int kernel = compute.FindKernel("CSUpdate");
+        compute.SetBuffer(kernel, "_Properties", meshPropertiesBuffer);
+
+        kernel = compute.FindKernel("CSInit");
+        compute.SetBuffer(kernel, "_Properties", meshPropertiesBuffer);
+        // 初始化buffer中的位置数据
+        compute.Dispatch(kernel, Mathf.CeilToInt(instancingParam.numberPerRow * instancingParam.numberPerCol / 64f), 1, 1);
 
         updateArgsBuffer();
     }
@@ -100,6 +109,9 @@ public class IndirectInstancing : MonoBehaviour
 
     void Update()
     {
+        int kernel = compute.FindKernel("CSUpdate");
+        compute.Dispatch(kernel, Mathf.CeilToInt(instancingParam.numberPerRow * instancingParam.numberPerCol / 64f), 1, 1);
+
         Graphics.DrawMeshInstancedIndirect(_meshes[_curMeshIndex], 0, _material, bounds, argsBuffer);
     }
 
