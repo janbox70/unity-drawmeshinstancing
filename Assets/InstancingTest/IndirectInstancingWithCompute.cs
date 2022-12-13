@@ -8,6 +8,8 @@ public class IndirectInstancingWithCompute : MonoBehaviour
 {
     public InstancingParam instancingParam;
     public ComputeShader compute;
+
+    public bool updateScale = false;
     private Vector4 _region;
 
     private List<Mesh> _meshes = null;
@@ -87,7 +89,7 @@ public class IndirectInstancingWithCompute : MonoBehaviour
 
         _material.SetBuffer("_Properties", meshPropertiesBuffer);
 
-        int kernel = compute.FindKernel("CSUpdate");
+        int kernel = compute.FindKernel(updateScale ? "CSUpdateScale" : "CSUpdateY");
         compute.SetBuffer(kernel, "_Properties", meshPropertiesBuffer);
 
         kernel = compute.FindKernel("CSInit");
@@ -109,7 +111,7 @@ public class IndirectInstancingWithCompute : MonoBehaviour
 
     void Update()
     {
-        int kernel = compute.FindKernel("CSUpdate");
+        int kernel = compute.FindKernel(updateScale ? "CSUpdateScale" : "CSUpdateY");
         compute.Dispatch(kernel, Mathf.CeilToInt(instancingParam.numberPerRow * instancingParam.numberPerCol / 64f), 1, 1);
 
         Graphics.DrawMeshInstancedIndirect(_meshes[_curMeshIndex], 0, _material, bounds, argsBuffer);

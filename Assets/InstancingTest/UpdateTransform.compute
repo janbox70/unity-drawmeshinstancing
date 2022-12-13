@@ -1,6 +1,7 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSInit
-#pragma kernel CSUpdate
+#pragma kernel CSUpdateY
+#pragma kernel CSUpdateScale
 
 
 struct MeshProperties {
@@ -35,8 +36,16 @@ void CSInit(uint3 id : SV_DispatchThreadID) {
 }
 
 [numthreads(64, 1, 1)]
-void CSUpdate(uint3 id : SV_DispatchThreadID) {
+void CSUpdateY(uint3 id : SV_DispatchThreadID) {
     // do update.  modify y only here.  crrs.z is distance to the center
     float y = 5 * (sin(_Time.y * 2 - _Properties[id.x].crrs.z * 20) + 1);
     _Properties[id.x].mat._24 = y;
+}
+
+[numthreads(64, 1, 1)]
+void CSUpdateScale(uint3 id : SV_DispatchThreadID) {
+    // do update.  crrs.z is distance to the center
+    float scale = (sin(_Time.y - _Properties[id.x].crrs.y * 20) + 2) * (sin(_Time.y - _Properties[id.x].crrs.x * 20) + 2);
+    _Properties[id.x].mat._11_22_33 = scale;
+    _Properties[id.x].mat._24 = scale;
 }
