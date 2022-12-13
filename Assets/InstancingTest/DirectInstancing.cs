@@ -106,7 +106,7 @@ public class DirectInstancing : MonoBehaviour
                 posArray[i].x = (index / instancingParam.numberPerRow) / (float)instancingParam.numberPerCol;
                 posArray[i].y = (index % instancingParam.numberPerRow) / (float)instancingParam.numberPerRow;
                 posArray[i].z = Mathf.Sqrt((posArray[i].x - 0.5f) * (posArray[i].x - 0.5f) + (posArray[i].y - 0.5f) * (posArray[i].y - 0.5f));
-                colorArray[i].Set(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f), 1f);
+                colorArray[i] = Random.ColorHSV();
 
                 Vector3 pos = new Vector3(posArray[i].x * (instancingParam.EndX - instancingParam.StartX) + instancingParam.StartX, 0, posArray[i].y * (instancingParam.EndZ - instancingParam.StartZ) + instancingParam.StartZ);
                 batchData[curBatch].matrix[i] = Matrix4x4.TRS(pos, Quaternion.identity, Vector3.one);

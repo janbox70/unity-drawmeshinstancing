@@ -11,3 +11,4 @@ Packages/
 /*.csproj
 /*.sln
 *Debug*/
+output/

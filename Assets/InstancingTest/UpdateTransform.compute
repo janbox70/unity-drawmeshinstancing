@@ -1,0 +1,36 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+
+struct MeshProperties {
+    float4x4 mat;
+    float4 color;
+};
+
+RWStructuredBuffer<MeshProperties> _Properties;
+float _Col;
+float _Row;
+float4 _Region;
+float4 _Time;
+
+// We used to just be able to use (1, 1, 1) threads for whatever population (not sure the old limit), but a Unity update
+// imposed a thread limit of 65535.  Now, to populations above that, we need to be more granular with our threads.
+[numthreads(64, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID) {
+    float2 uv = float2(floor(id.x / _Row) / _Col, (id.x % (int)_Row) / _Row);
+    float r = sqrt((uv.x - 0.5) * (uv.x - 0.5) + (uv.y - 0.5) * (uv.y - 0.5));
+    float y = 5 * (sin(_Time.y * 2 - r * 20) + 1);
+    //_Properties[id.x].mat._42 = y;
+    float4 pos = float4(uv.x * (_Region.y - _Region.x) + _Region.x, y, uv.y * (_Region.w - _Region.z) + _Region.z, 1);
+
+    _Properties[id.x].mat = float4x4(
+        //1, 0, 0, 0,
+        //0, 1, 0, 0,
+        //0, 0, 1, 0,
+        //pos.x, pos.y, pos.z, 1
+        pos.w, 0, 0, pos.x,
+        0, pos.w, 0, pos.y,
+        0, 0, pos.w, pos.z,
+        0, 0, 0, 1
+        );
+}
