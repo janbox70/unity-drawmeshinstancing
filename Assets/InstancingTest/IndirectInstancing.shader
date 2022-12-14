@@ -34,7 +34,7 @@ Shader "Instanced/IndirectInstancing"
                 v2f o;
 
                 float4 p = _Properties[instanceID].crrs;
-                float y = 5 * (sin(_Time.y * 2 - p.z * 20) + 1);
+                float y = 5 * (sin(_Time.y * 2 - p.z * 20));
 
                 float4x4 mat = float4x4(
                     p.w, 0, 0, p.x * (_Region.y - _Region.x) + _Region.x,

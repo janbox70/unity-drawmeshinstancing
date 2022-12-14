@@ -38,7 +38,7 @@ void CSInit(uint3 id : SV_DispatchThreadID) {
 [numthreads(64, 1, 1)]
 void CSUpdateY(uint3 id : SV_DispatchThreadID) {
     // do update.  modify y only here.  crrs.z is distance to the center
-    float y = 5 * (sin(_Time.y * 2 - _Properties[id.x].crrs.z * 20) + 1);
+    float y = 5 * sin(_Time.y * 2 - _Properties[id.x].crrs.z * 20);
     _Properties[id.x].mat._24 = y;
 }
 
