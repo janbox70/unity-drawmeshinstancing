@@ -6,13 +6,11 @@ using UnityEngine.Rendering;
 
 public class IndirectInstancingWithCompute : MonoBehaviour
 {
-    public InstancingParam instancingParam;
+    public InstancingParam param;
     public ComputeShader compute;
 
     public bool updateScale = false;
-    private Vector4 _region;
 
-    private List<Mesh> _meshes = null;
     private int _curMeshIndex = 0;
     private Material _material = null;
     private GUIStyle _btnStyle = null;
@@ -42,13 +40,13 @@ public class IndirectInstancingWithCompute : MonoBehaviour
     {
         Debug.Log("Start");
 
-        initMesh();
+        initMaterial();
 
         argsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
         createBuffers();
     }
 
-    void initMesh()
+    void initMaterial()
     {
         // 装入材质
         string fullname = "Material/IndirectInstancingWithCompute";
@@ -57,28 +55,24 @@ public class IndirectInstancingWithCompute : MonoBehaviour
         {
             Debug.LogError($"failed load material: {fullname}");
         }
-
-        // 装入 mesh
-        _meshes = instancingParam.loadMeshes(this.transform);
     }
 
     void createBuffers()
     {
-        int instanceCount = instancingParam.numberPerRow * instancingParam.numberPerCol;
-
+        int instanceCount = param.numberPerRow * param.numberPerCol;
         DebugUI.DisplayMessage = $"InstanceCount: {instanceCount}";
 
-        Shader.SetGlobalFloat("_Col", instancingParam.numberPerCol);
-        Shader.SetGlobalFloat("_Row", instancingParam.numberPerRow);
-        Shader.SetGlobalVector("_Region", new Vector4(instancingParam.StartX, instancingParam.EndX, instancingParam.StartZ, instancingParam.EndZ));
+        Shader.SetGlobalFloat("_Col", param.numberPerCol);
+        Shader.SetGlobalFloat("_Row", param.numberPerRow);
+        Shader.SetGlobalVector("_Region", new Vector4(param.StartX, param.EndX, param.StartZ, param.EndZ));
 
         MeshProperties[] properties = new MeshProperties[instanceCount];
         for (int i = 0; i < instanceCount; i++)
         {
             // 除颜色外，其余的均在computeshader CSInit中初始化
-            //float x = (i / instancingParam.numberPerRow) / (float)instancingParam.numberPerCol;
-            //float z = (i % instancingParam.numberPerRow) / (float)instancingParam.numberPerRow;
-            //Vector3 pos = new Vector3(x * (instancingParam.EndX - instancingParam.StartX) + instancingParam.StartX, 0, z * (instancingParam.EndZ - instancingParam.StartZ) + instancingParam.StartZ);
+            //float x = (i / param.numberPerRow) / (float)param.numberPerCol;
+            //float z = (i % param.numberPerRow) / (float)param.numberPerRow;
+            //Vector3 pos = new Vector3(x * (param.EndX - param.StartX) + param.StartX, 0, z * (param.EndZ - param.StartZ) + param.StartZ);
             //Vector3 pos = Vector3.zero;
             //properties[i].mat = Matrix4x4.TRS(pos, Quaternion.identity, Vector3.one);
             properties[i].color = UnityEngine.Random.ColorHSV();
@@ -95,26 +89,26 @@ public class IndirectInstancingWithCompute : MonoBehaviour
         kernel = compute.FindKernel("CSInit");
         compute.SetBuffer(kernel, "_Properties", meshPropertiesBuffer);
         // 初始化buffer中的位置数据
-        compute.Dispatch(kernel, Mathf.CeilToInt(instancingParam.numberPerRow * instancingParam.numberPerCol / 64f), 1, 1);
+        compute.Dispatch(kernel, Mathf.CeilToInt(param.numberPerRow * param.numberPerCol / 64f), 1, 1);
 
         updateArgsBuffer();
     }
 
     void updateArgsBuffer() 
     {
-        args[0] = (uint)_meshes[_curMeshIndex].GetIndexCount(0);
-        args[1] = (uint)(instancingParam.numberPerRow * instancingParam.numberPerCol);
-        args[2] = (uint)_meshes[_curMeshIndex].GetIndexStart(0);
-        args[3] = (uint)_meshes[_curMeshIndex].GetBaseVertex(0);
+        args[0] = (uint)param.meshes[_curMeshIndex].GetIndexCount(0);
+        args[1] = (uint)(param.numberPerRow * param.numberPerCol);
+        args[2] = (uint)param.meshes[_curMeshIndex].GetIndexStart(0);
+        args[3] = (uint)param.meshes[_curMeshIndex].GetBaseVertex(0);
         argsBuffer.SetData(args);
     }
 
     void Update()
     {
         int kernel = compute.FindKernel(updateScale ? "CSUpdateScale" : "CSUpdateY");
-        compute.Dispatch(kernel, Mathf.CeilToInt(instancingParam.numberPerRow * instancingParam.numberPerCol / 64f), 1, 1);
+        compute.Dispatch(kernel, Mathf.CeilToInt(param.numberPerRow * param.numberPerCol / 64f), 1, 1);
 
-        Graphics.DrawMeshInstancedIndirect(_meshes[_curMeshIndex], 0, _material, bounds, argsBuffer);
+        Graphics.DrawMeshInstancedIndirect(param.meshes[_curMeshIndex], 0, _material, bounds, argsBuffer);
     }
 
     void OnDisable()
@@ -137,24 +131,24 @@ public class IndirectInstancingWithCompute : MonoBehaviour
         if(_btnStyle == null)
         {
             _btnStyle = new GUIStyle(GUI.skin.box);
-            _btnStyle.fontSize = 40;
+            _btnStyle.fontSize = param.fontSize;
             _btnStyle.alignment= TextAnchor.MiddleCenter;
         }
-        int space = (Screen.width - 200 * instancingParam.objTypes.Length )/(instancingParam.objTypes.Length+1);
-        Rect rc = new Rect(space, Screen.height - 120, 200, 80);
-        for( int i = 0; i < instancingParam.objTypes.Length; i++)
+        int space = (Screen.width - param.buttonWidth * param.meshes.Length )/(param.meshes.Length+1);
+        Rect rc = new Rect(space, Screen.height - param.buttonHeight*1.5f, param.buttonWidth, param.buttonHeight);
+        for( int i = 0; i < param.meshes.Length; i++)
         {
             _btnStyle.normal.textColor = i == _curMeshIndex? Color.green : Color.gray;
 
-            if (GUI.Button(rc, instancingParam.objTypes[i], _btnStyle))
+            if (GUI.Button(rc, param.meshes[i].name, _btnStyle))
             {
                 // 点击 Button 时执行此代码
                 _curMeshIndex = i;
                 updateArgsBuffer();
             }
 
-            rc.xMin += space + 200;
-            rc.xMax += space + 200;
+            rc.xMin += space + param.buttonWidth;
+            rc.xMax += space + param.buttonWidth;
         }
     }
 }

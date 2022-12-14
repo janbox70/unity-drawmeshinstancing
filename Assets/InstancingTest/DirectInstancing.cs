@@ -5,9 +5,7 @@ using UnityEngine.Rendering;
 
 public class DirectInstancing : MonoBehaviour
 {
-    public InstancingParam instancingParam;
-    // commandBuffer，貌似不能正常工作
-    public bool byCommandBuffer = false;
+    public InstancingParam param;
 
     struct InstancingBatch
     {
@@ -17,16 +15,10 @@ public class DirectInstancing : MonoBehaviour
     };
 
     private InstancingBatch[] batchData = null;
-
     private List<Mesh> _meshes = null;
-
     private int _curMeshIndex = 0;
-
     private Material _material = null;
-
     private GUIStyle _btnStyle = null;
-
-    private CommandBuffer _cmdBuff = null;
 
 
     void Start()
@@ -35,11 +27,6 @@ public class DirectInstancing : MonoBehaviour
 
         initMesh();
         createObjects();
-
-        if(byCommandBuffer)
-        {
-            prepareCommandBuffer();
-        }
     }
 
     void initMesh()
@@ -51,14 +38,11 @@ public class DirectInstancing : MonoBehaviour
         {
             Debug.LogError($"failed load material: {fullname}");
         }
-
-        // 装入 mesh
-        _meshes = instancingParam.loadMeshes(this.transform);
     }
 
     void createObjects()
     {
-        int number = instancingParam.numberPerRow * instancingParam.numberPerCol;
+        int number = param.numberPerRow * param.numberPerCol;
 
         DebugUI.DisplayMessage = $"InstanceCount: {number}";
 
@@ -85,12 +69,12 @@ public class DirectInstancing : MonoBehaviour
             for(int i = 0; i < batchSize; i++, index ++)
             {
                 // x: is col, y is row,  z 半径， w: 方向角 
-                posArray[i].x = (index / instancingParam.numberPerRow) / (float)instancingParam.numberPerCol;
-                posArray[i].y = (index % instancingParam.numberPerRow) / (float)instancingParam.numberPerRow;
+                posArray[i].x = (index / param.numberPerRow) / (float)param.numberPerCol;
+                posArray[i].y = (index % param.numberPerRow) / (float)param.numberPerRow;
                 posArray[i].z = Mathf.Sqrt((posArray[i].x - 0.5f) * (posArray[i].x - 0.5f) + (posArray[i].y - 0.5f) * (posArray[i].y - 0.5f));
                 colorArray[i] = Random.ColorHSV();
 
-                Vector3 pos = new Vector3(posArray[i].x * (instancingParam.EndX - instancingParam.StartX) + instancingParam.StartX, 0, posArray[i].y * (instancingParam.EndZ - instancingParam.StartZ) + instancingParam.StartZ);
+                Vector3 pos = new Vector3(posArray[i].x * (param.EndX - param.StartX) + param.StartX, 0, posArray[i].y * (param.EndZ - param.StartZ) + param.StartZ);
                 batchData[curBatch].matrix[i] = Matrix4x4.TRS(pos, Quaternion.identity, Vector3.one);
             }
 
@@ -103,30 +87,10 @@ public class DirectInstancing : MonoBehaviour
     void Update()
     {
         // 分批次执行
-        if(!byCommandBuffer)
-        {
-            for (int batch = 0; batch < batchData.Length; batch++)
-            {
-                Graphics.DrawMeshInstanced(_meshes[_curMeshIndex], 0, _material, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
-            }
-        }
-    }
-
-    void prepareCommandBuffer()
-    {
-        // 这种方式不能工作？  // todo
-        if (_cmdBuff != null)
-        {
-            Camera.main.RemoveCommandBuffer(CameraEvent.AfterForwardOpaque, _cmdBuff);
-            CommandBufferPool.Release(_cmdBuff);
-        }
-        _cmdBuff = CommandBufferPool.Get("DrawMeshInstanced");
         for (int batch = 0; batch < batchData.Length; batch++)
         {
-            _cmdBuff.DrawMeshInstanced(_meshes[_curMeshIndex], 0, _material, -1, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
+            Graphics.DrawMeshInstanced(param.meshes[_curMeshIndex], 0, _material, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
         }
-
-        Camera.main.AddCommandBuffer(CameraEvent.AfterForwardOpaque, _cmdBuff);
     }
 
     private void OnGUI()
@@ -134,29 +98,23 @@ public class DirectInstancing : MonoBehaviour
         if(_btnStyle == null)
         {
             _btnStyle = new GUIStyle(GUI.skin.box);
-            _btnStyle.fontSize = 40;
+            _btnStyle.fontSize = param.fontSize;
             _btnStyle.alignment= TextAnchor.MiddleCenter;
         }
-        int space = (Screen.width - 200 * instancingParam.objTypes.Length )/(instancingParam.objTypes.Length+1);
-        Rect rc = new Rect(space, Screen.height - 120, 200, 80);
-        for( int i = 0; i < instancingParam.objTypes.Length; i++)
+        int space = (Screen.width - param.buttonWidth * param.meshes.Length )/(param.meshes.Length+1);
+        Rect rc = new Rect(space, Screen.height - param.buttonHeight*1.5f, param.buttonWidth, param.buttonHeight);
+        for( int i = 0; i < param.meshes.Length; i++)
         {
             _btnStyle.normal.textColor = i == _curMeshIndex? Color.green : Color.gray;
 
-            if (GUI.Button(rc, instancingParam.objTypes[i], _btnStyle))
+            if (GUI.Button(rc, param.meshes[i].name, _btnStyle))
             {
                 // 点击 Button 时执行此代码
                 _curMeshIndex = i;
-
-                if(byCommandBuffer)
-                {
-                    // mesh修改了，需要更新 commandBuffer
-                    prepareCommandBuffer();
-                }
             }
 
-            rc.xMin += space + 200;
-            rc.xMax += space + 200;
+            rc.xMin += space + param.buttonWidth;
+            rc.xMax += space + param.buttonWidth;
         }
     }
 }
