@@ -29,13 +29,14 @@ public class DebugUI : MonoBehaviour
         _style = new GUIStyle();
         _style.fontSize = 32;
         _style.alignment = TextAnchor.MiddleCenter;
-        _style.fixedWidth = Screen.width;
         _style.normal.textColor = Color.white;
 
         processorCount = SystemInfo.processorCount;
         _lastUpdateTime = Time.realtimeSinceStartup;
 
         //Application.runInBackground = true;
+        //QualitySettings.vSyncCount = 0;
+        //Application.targetFrameRate = -1;
 
         // setup the thread
         if (EnableCPUUsage)
@@ -123,6 +124,7 @@ public class DebugUI : MonoBehaviour
     }
     private void OnGUI()
     {
+        _style.fixedWidth = Screen.width;
         if (EnableCPUUsage)
         {
             GUILayout.Label($"FPS: {_fps:F2} CPU: {CpuUsage:F1}%  (Core: {processorCount})\n{DisplayMessage}", _style);
