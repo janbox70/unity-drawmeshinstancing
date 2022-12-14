@@ -4,5 +4,5 @@
 
 
 目录结构：
-Asset/InstancingTest：相关源码，脚本、shader等
-Asset/Resources：使用到的资源
+- Asset/InstancingTest：相关源码，脚本、shader等
+- Asset/Resources：使用到的资源
