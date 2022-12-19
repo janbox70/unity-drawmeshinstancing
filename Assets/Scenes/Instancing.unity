@@ -380,7 +380,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   param: {fileID: 11400000, guid: d06c4fc16d06ebe439945b87e02d539a, type: 2}
   curMode: 2
-  EnableCPUUsage: 1
+  EnableCPUUsage: 0
 --- !u!1 &1574027017
 GameObject:
   m_ObjectHideFlags: 0

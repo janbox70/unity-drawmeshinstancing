@@ -34,7 +34,7 @@ public class InstancingHub : MonoBehaviour
     void Start()
     {
         _msgStyle = new GUIStyle();
-        _msgStyle.fontSize = 18;
+        _msgStyle.fontSize = 28;
         _msgStyle.alignment = TextAnchor.LowerLeft;
         _msgStyle.normal.textColor = Color.white;
 
@@ -77,7 +77,7 @@ public class InstancingHub : MonoBehaviour
         if (_btnStyle == null)
         {
             _btnStyle = new GUIStyle(GUI.skin.box);
-            _btnStyle.fontSize = 18;
+            _btnStyle.fontSize = 28;
             _btnStyle.alignment = TextAnchor.MiddleCenter;
         }
         GUILayout.BeginHorizontal();
@@ -111,11 +111,11 @@ public class InstancingHub : MonoBehaviour
 
         if (EnableCPUUsage)
         {
-            GUILayout.Label($"FPS: {_fps:F2} CPU: {CpuUsage:F1}%  (Core: {processorCount})\nInstanceCount: {number}", _msgStyle);
+            GUILayout.Label($"InstanceCount: {number} FPS: {_fps:F2} CPU: {CpuUsage:F1}%  (Core: {processorCount})", _msgStyle);
         }
         else
         {
-            GUILayout.Label($"FPS: {_fps:F2}\nInstanceCount: {number}", _msgStyle);
+            GUILayout.Label($"InstanceCount: {number} FPS: {_fps:F2}", _msgStyle);
         }
     }
 
