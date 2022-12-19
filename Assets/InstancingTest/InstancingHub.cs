@@ -4,32 +4,39 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 
-public class DebugUI : MonoBehaviour
+public class InstancingHub : MonoBehaviour
 {
-    static public string DisplayMessage = "";
-    GUIStyle _style = null;
+    public InstancingParam param;
+    private string[] _modeNames = { "DirectInstancing", "IndirectInstancing", "IndirectInstancingWithCompute" };
+    public int curMode = 0;
+
+    private GUIStyle _btnStyle = null;
+    private GUIStyle _msgStyle = null;
 
     // cpu
     public bool EnableCPUUsage = false;
     private int processorCount;
     private float updateInterval = 1f;
 
-    private float CpuUsage = 0f;
+    static public float CpuUsage = 0f;
 
     private Thread _cpuThread;
     private float _lasCpuUsage;
 
+
     // fps 
-    private float _fps = 1f;
+    static public float _fps = 1f;
     private float _lastUpdateTime = 0f;
     private int _framesSinceLastUpdate = 0;
 
-    private void Start()
+    // Start is called before the first frame update
+
+    void Start()
     {
-        _style = new GUIStyle();
-        _style.fontSize = 32;
-        _style.alignment = TextAnchor.MiddleCenter;
-        _style.normal.textColor = Color.white;
+        _msgStyle = new GUIStyle();
+        _msgStyle.fontSize = 18;
+        _msgStyle.alignment = TextAnchor.LowerLeft;
+        _msgStyle.normal.textColor = Color.white;
 
         processorCount = SystemInfo.processorCount;
         _lastUpdateTime = Time.realtimeSinceStartup;
@@ -52,6 +59,64 @@ public class DebugUI : MonoBehaviour
             // start the cpu usage thread
             _cpuThread.Start();
         }
+
+
+        modeChanged();
+    }
+    private void modeChanged() 
+    { 
+        for (int i = 0; i < _modeNames.Length; i++)
+        {
+            GameObject obj = this.transform.Find(_modeNames[i]).gameObject;
+            obj.SetActive(i == curMode);
+        }
+    }
+
+    private void OnGUI()
+    {
+        if (_btnStyle == null)
+        {
+            _btnStyle = new GUIStyle(GUI.skin.box);
+            _btnStyle.fontSize = 18;
+            _btnStyle.alignment = TextAnchor.MiddleCenter;
+        }
+        GUILayout.BeginHorizontal();
+        for (int i = 0; i < _modeNames.Length; i++)
+        {
+            _btnStyle.normal.textColor = i == curMode ? Color.green : Color.gray;
+
+            if (GUILayout.Button(_modeNames[i], _btnStyle))
+            {
+                // 点击 Button 时执行此代码
+                curMode = i;
+                modeChanged();
+            }
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        for (int i = 0; i < param.meshes.Length; i++)
+        {
+            _btnStyle.normal.textColor = i == param.curMesh ? Color.green : Color.gray;
+
+            if (GUILayout.Button(param.meshes[i].name, _btnStyle))
+            {
+                // 点击 Button 时执行此代码
+                param.curMesh = i;
+            }
+        }
+        GUILayout.EndHorizontal();
+
+        int number = param.numberPerCol * param.numberPerRow;
+
+        if (EnableCPUUsage)
+        {
+            GUILayout.Label($"FPS: {_fps:F2} CPU: {CpuUsage:F1}%  (Core: {processorCount})\nInstanceCount: {number}", _msgStyle);
+        }
+        else
+        {
+            GUILayout.Label($"FPS: {_fps:F2}\nInstanceCount: {number}", _msgStyle);
+        }
     }
 
     private void OnDestroy()
@@ -64,7 +129,7 @@ public class DebugUI : MonoBehaviour
     {
         _framesSinceLastUpdate++;
 
-        float curTime  = Time.realtimeSinceStartup;
+        float curTime = Time.realtimeSinceStartup;
         if (curTime - _lastUpdateTime > updateInterval)
         {
             _fps = _framesSinceLastUpdate / (curTime - _lastUpdateTime);
@@ -120,18 +185,6 @@ public class DebugUI : MonoBehaviour
 
             // Wait for UpdateInterval
             Thread.Sleep(Mathf.RoundToInt(updateInterval * 1000));
-        }
-    }
-    private void OnGUI()
-    {
-        _style.fixedWidth = Screen.width;
-        if (EnableCPUUsage)
-        {
-            GUILayout.Label($"FPS: {_fps:F2} CPU: {CpuUsage:F1}%  (Core: {processorCount})\n{DisplayMessage}", _style);
-        } 
-        else
-        {
-            GUILayout.Label($"FPS: {_fps:F2}\n{DisplayMessage}", _style);
         }
     }
 }

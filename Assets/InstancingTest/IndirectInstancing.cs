@@ -10,7 +10,6 @@ public class IndirectInstancing : MonoBehaviour
 
     private int _curMeshIndex = 0;
     private Material _material = null;
-    private GUIStyle _btnStyle = null;
 
     private ComputeBuffer argsBuffer;
     private ComputeBuffer meshPropertiesBuffer;
@@ -55,7 +54,6 @@ public class IndirectInstancing : MonoBehaviour
     void createBuffers()
     {
         int instanceCount = param.numberPerRow * param.numberPerCol;
-        DebugUI.DisplayMessage = $"InstanceCount: {instanceCount}";
 
         Shader.SetGlobalFloat("_Col", param.numberPerCol);
         Shader.SetGlobalFloat("_Row", param.numberPerRow);
@@ -92,10 +90,16 @@ public class IndirectInstancing : MonoBehaviour
 
     void Update()
     {
+        if (_curMeshIndex != param.curMesh)
+        {
+            _curMeshIndex = param.curMesh;
+            updateArgsBuffer();
+        }
+
         Graphics.DrawMeshInstancedIndirect(param.meshes[_curMeshIndex], 0, _material, bounds, argsBuffer);
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         if (meshPropertiesBuffer != null)
         {
@@ -109,30 +113,4 @@ public class IndirectInstancing : MonoBehaviour
             argsBuffer = null;
         }
     }
-
-    private void OnGUI()
-    {
-        if (_btnStyle == null)
-        {
-            _btnStyle = new GUIStyle(GUI.skin.box);
-            _btnStyle.fontSize = param.fontSize;
-            _btnStyle.alignment = TextAnchor.MiddleCenter;
-        }
-        int space = (Screen.width - param.buttonWidth * param.meshes.Length) / (param.meshes.Length + 1);
-        Rect rc = new Rect(space, Screen.height - param.buttonHeight * 1.5f, param.buttonWidth, param.buttonHeight);
-        for (int i = 0; i < param.meshes.Length; i++)
-        {
-            _btnStyle.normal.textColor = i == _curMeshIndex ? Color.green : Color.gray;
-
-            if (GUI.Button(rc, param.meshes[i].name, _btnStyle))
-            {
-                // 点击 Button 时执行此代码
-                _curMeshIndex = i;
-                updateArgsBuffer();
-            }
-
-            rc.xMin += space + param.buttonWidth;
-            rc.xMax += space + param.buttonWidth;
-        }
-    }
-}
+ }

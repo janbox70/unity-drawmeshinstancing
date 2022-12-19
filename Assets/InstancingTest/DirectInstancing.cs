@@ -15,10 +15,7 @@ public class DirectInstancing : MonoBehaviour
     };
 
     private InstancingBatch[] batchData = null;
-    private List<Mesh> _meshes = null;
-    private int _curMeshIndex = 0;
     private Material _material = null;
-    private GUIStyle _btnStyle = null;
 
 
     void Start()
@@ -43,8 +40,6 @@ public class DirectInstancing : MonoBehaviour
     void createObjects()
     {
         int number = param.numberPerRow * param.numberPerCol;
-
-        DebugUI.DisplayMessage = $"InstanceCount: {number}";
 
         int batchNumber = (number + 999) / 1000;
 
@@ -89,32 +84,7 @@ public class DirectInstancing : MonoBehaviour
         // 分批次执行
         for (int batch = 0; batch < batchData.Length; batch++)
         {
-            Graphics.DrawMeshInstanced(param.meshes[_curMeshIndex], 0, _material, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
-        }
-    }
-
-    private void OnGUI()
-    {
-        if(_btnStyle == null)
-        {
-            _btnStyle = new GUIStyle(GUI.skin.box);
-            _btnStyle.fontSize = param.fontSize;
-            _btnStyle.alignment= TextAnchor.MiddleCenter;
-        }
-        int space = (Screen.width - param.buttonWidth * param.meshes.Length )/(param.meshes.Length+1);
-        Rect rc = new Rect(space, Screen.height - param.buttonHeight*1.5f, param.buttonWidth, param.buttonHeight);
-        for( int i = 0; i < param.meshes.Length; i++)
-        {
-            _btnStyle.normal.textColor = i == _curMeshIndex? Color.green : Color.gray;
-
-            if (GUI.Button(rc, param.meshes[i].name, _btnStyle))
-            {
-                // 点击 Button 时执行此代码
-                _curMeshIndex = i;
-            }
-
-            rc.xMin += space + param.buttonWidth;
-            rc.xMax += space + param.buttonWidth;
+            Graphics.DrawMeshInstanced(param.meshes[param.curMesh], 0, _material, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
         }
     }
 }

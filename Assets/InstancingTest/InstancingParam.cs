@@ -6,17 +6,13 @@ using UnityEngine;
 public class InstancingParam: ScriptableObject
 {
     public Mesh[] meshes;
+    public int curMesh;
     public int numberPerRow;
     public int numberPerCol;
     public float StartX;
     public float EndX;
     public float StartZ;
     public float EndZ;
-
-    // ui
-    public int fontSize = 32;
-    public int buttonWidth = 160;
-    public int buttonHeight = 60;
 
     private void Awake()
     {
