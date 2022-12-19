@@ -37,12 +37,7 @@ public class IndirectInstancingWithCompute : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("Start");
-
-        initMaterial();
-
-        argsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
-        createBuffers();
+        Debug.Log("IndirectInstancingWithCompute::Start");
     }
 
     void initMaterial()
@@ -56,14 +51,10 @@ public class IndirectInstancingWithCompute : MonoBehaviour
         }
     }
 
-    void createBuffers()
+    void prepareBuffers()
     {
         int instanceCount = param.numberPerRow * param.numberPerCol;
  
-        Shader.SetGlobalFloat("_Col", param.numberPerCol);
-        Shader.SetGlobalFloat("_Row", param.numberPerRow);
-        Shader.SetGlobalVector("_Region", new Vector4(param.StartX, param.EndX, param.StartZ, param.EndZ));
-
         MeshProperties[] properties = new MeshProperties[instanceCount];
         for (int i = 0; i < instanceCount; i++)
         {
@@ -115,8 +106,19 @@ public class IndirectInstancingWithCompute : MonoBehaviour
         Graphics.DrawMeshInstancedIndirect(param.meshes[_curMeshIndex], 0, _material, bounds, argsBuffer);
     }
 
-    void OnDestroy()
+    private void OnEnable()
     {
+        Debug.Log("IndirectInstancingWithCompute::OnEnable");
+        argsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
+
+        initMaterial();
+        prepareBuffers();
+    }
+
+    void OnDisable()
+    {
+        Debug.Log("IndirectInstancingWithCompute::OnDisable");
+
         if (meshPropertiesBuffer != null)
         {
             meshPropertiesBuffer.Release();

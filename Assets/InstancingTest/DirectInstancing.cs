@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -21,12 +22,11 @@ public class DirectInstancing : MonoBehaviour
     void Start()
     {
         Debug.Log("Start");
-
-        initMesh();
-        createObjects();
+        initMaterial();
+        prepareBuffer();
     }
 
-    void initMesh()
+    void initMaterial()
     {
         // ×°Èë²ÄÖÊ "Assets/Resources/Material/DirectInstancing.mat"
         string fullname = "Material/DirectInstancing";
@@ -37,7 +37,7 @@ public class DirectInstancing : MonoBehaviour
         }
     }
 
-    void createObjects()
+    void prepareBuffer()
     {
         int number = param.numberPerRow * param.numberPerCol;
 
@@ -86,5 +86,16 @@ public class DirectInstancing : MonoBehaviour
         {
             Graphics.DrawMeshInstanced(param.meshes[param.curMesh], 0, _material, batchData[batch].matrix, batchData[batch].matrix.Length, batchData[batch].mpb);
         }
+    }
+
+    private void OnEnable()
+    {
+        Debug.Log("DirectInstancing::OnEnable");
+    }
+
+    private void OnDisable()
+    {
+        Debug.Log("DirectInstancing::OnDisable");
+
     }
 }

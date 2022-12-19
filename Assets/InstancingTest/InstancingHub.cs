@@ -60,15 +60,24 @@ public class InstancingHub : MonoBehaviour
             _cpuThread.Start();
         }
 
+        initGlobal();
 
-        modeChanged();
+        setMode(curMode);
     }
-    private void modeChanged() 
+
+    private void initGlobal()
+    {
+        Shader.SetGlobalFloat("_Col", param.numberPerCol);
+        Shader.SetGlobalFloat("_Row", param.numberPerRow);
+        Shader.SetGlobalVector("_Region", new Vector4(param.StartX, param.EndX, param.StartZ, param.EndZ));
+    }
+    private void setMode(int mode) 
     { 
+        curMode = mode;
         for (int i = 0; i < _modeNames.Length; i++)
         {
             GameObject obj = this.transform.Find(_modeNames[i]).gameObject;
-            obj.SetActive(i == curMode);
+            obj.SetActive(i == mode);
         }
     }
 
@@ -88,8 +97,7 @@ public class InstancingHub : MonoBehaviour
             if (GUILayout.Button(_modeNames[i], _btnStyle))
             {
                 // 点击 Button 时执行此代码
-                curMode = i;
-                modeChanged();
+                setMode(i);
             }
         }
         GUILayout.EndHorizontal();
